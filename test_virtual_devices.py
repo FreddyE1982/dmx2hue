@@ -8,6 +8,8 @@ from virtual_devices import (
     VirtualHueDevice,
     VirtualHueBridge,
     Hue2DMXBridgeDevice,
+    rgb_to_xy,
+    xy_to_rgb,
 )
 from python_hue_v2 import bridge as hue_bridge
 
@@ -42,6 +44,20 @@ def test_dmx_device_address():
     assert dmx.address == 20
     with pytest.raises(ValueError):
         dmx.set_address(0)
+
+
+def test_rgb_xy_roundtrip():
+    samples = [
+        (0.3, 0.3, 50),
+        (0.1, 0.2, 75),
+        (0.7, 0.3, 100),
+    ]
+
+    for x, y, bri in samples:
+        r, g, b = xy_to_rgb(x, y, bri)
+        rx, ry, _ = rgb_to_xy(r, g, b)
+        assert pytest.approx(rx, abs=0.15) == x
+        assert pytest.approx(ry, abs=0.15) == y
 
 
 def test_hue_bridge_and_device():
