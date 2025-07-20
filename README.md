@@ -47,18 +47,19 @@ requests.put(
 Hue2DMXBridgeDevice(dmx, bridge, "3", lambda r, g, b: {0: r, 1: g, 2: b})
 
 # Hue device
-hue = VirtualHueDevice(
+with VirtualHueDevice(
     bridge_ip="127.0.0.1:8000",
     auth_token="demo",
     device_id="1",
     scheme="https",
-)
-hue.set_state(on=True, brightness=50)
+) as hue:
+    hue.set_state(on=True, brightness=50)
 
-# send an Entertainment API update
-hue.set_state(on=True, brightness=80, xy=[0.5, 0.4], use_entertainment=True)
+    # send an Entertainment API update
+    hue.set_state(on=True, brightness=80, xy=[0.5, 0.4], use_entertainment=True)
 ```
 
 These classes are simplified and intended for testing or educational purposes.
 The optional Entertainment API support allows basic streaming of color updates
-for quick experiments without real Hue hardware.
+for quick experiments without real Hue hardware. When used as a context manager,
+`VirtualHueDevice` automatically closes its network socket on exit.
