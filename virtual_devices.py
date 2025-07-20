@@ -33,6 +33,37 @@ def xy_to_rgb(x: float, y: float, brightness: int) -> tuple[int, int, int]:
     return int(r * 255), int(g * 255), int(b * 255)
 
 
+def rgb_to_xy(r: int, g: int, b: int) -> tuple[float, float, int]:
+    """Convert an RGB tuple to CIE xy coordinates and brightness.
+
+    The returned brightness value is in the Hue 0-100 scale.
+    """
+    if r == 0 and g == 0 and b == 0:
+        return 0.0, 0.0, 0
+
+    R = r / 255.0
+    G = g / 255.0
+    B = b / 255.0
+
+    R = ((R + 0.055) / 1.055) ** 2.4 if R > 0.04045 else R / 12.92
+    G = ((G + 0.055) / 1.055) ** 2.4 if G > 0.04045 else G / 12.92
+    B = ((B + 0.055) / 1.055) ** 2.4 if B > 0.04045 else B / 12.92
+
+    X = R * 0.664511 + G * 0.154324 + B * 0.162028
+    Y = R * 0.283881 + G * 0.668433 + B * 0.047685
+    Z = R * 0.000088 + G * 0.072310 + B * 0.986039
+
+    xyz_sum = X + Y + Z
+    if xyz_sum == 0:
+        x = y = 0.0
+    else:
+        x = X / xyz_sum
+        y = Y / xyz_sum
+
+    brightness = max(r, g, b) * 100 // 255
+    return x, y, int(brightness)
+
+
 class VirtualDMXDevice:
     """Virtual representation of a DMX512 device with an assignable address."""
 

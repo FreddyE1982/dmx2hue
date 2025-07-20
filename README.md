@@ -10,6 +10,7 @@ This repository contains simple Python implementations of virtual lighting devic
 - `VirtualHueBridge` offers a lightweight Flask server that emulates some Hue Bridge v2 endpoints.
 - `Hue2DMXBridgeDevice` exposes a DMX device as a Hue lamp using a custom RGB-to-DMX mapping. Streaming updates are throttled to the DMX refresh rate (~44 Hz).
 - `xy_to_rgb(x, y, brightness)` converts Hue xy coordinates to an RGB tuple.
+- `rgb_to_xy(r, g, b)` converts an RGB tuple back to xy coordinates and brightness.
 
 ## Usage
 
