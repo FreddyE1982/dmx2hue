@@ -8,6 +8,31 @@ import requests
 from flask import Flask, jsonify, request
 
 
+def xy_to_rgb(x: float, y: float, brightness: int) -> tuple[int, int, int]:
+    """Convert CIE xy coordinates and brightness to an RGB tuple."""
+    if brightness <= 0 or y == 0:
+        return 0, 0, 0
+    z = 1.0 - x - y
+    Y = brightness / 100.0
+    X = (Y / y) * x
+    Z = (Y / y) * z
+
+    r = X * 1.612 - Y * 0.203 - Z * 0.302
+    g = -X * 0.509 + Y * 1.412 + Z * 0.066
+    b = X * 0.026 - Y * 0.072 + Z * 0.962
+
+    r = max(0.0, r)
+    g = max(0.0, g)
+    b = max(0.0, b)
+    max_val = max(r, g, b)
+    if max_val > 1.0:
+        r /= max_val
+        g /= max_val
+        b /= max_val
+
+    return int(r * 255), int(g * 255), int(b * 255)
+
+
 class VirtualDMXDevice:
     """Virtual representation of a DMX512 device with an assignable address."""
 
@@ -87,7 +112,7 @@ class VirtualHueDevice:
                 xy = [0.0, 0.0]
             if brightness is None:
                 brightness = 100
-            r, g, b = self._xy_to_rgb(xy[0], xy[1], brightness)
+            r, g, b = xy_to_rgb(xy[0], xy[1], brightness)
             self._send_entertainment(r, g, b)
             return self.DummyResponse(200)
 
@@ -110,29 +135,6 @@ class VirtualHueDevice:
         resp.raise_for_status()
         return resp
 
-    @staticmethod
-    def _xy_to_rgb(x: float, y: float, brightness: int) -> tuple[int, int, int]:
-        if brightness <= 0 or y == 0:
-            return 0, 0, 0
-        z = 1.0 - x - y
-        Y = brightness / 100.0
-        X = (Y / y) * x
-        Z = (Y / y) * z
-
-        r = X * 1.612 - Y * 0.203 - Z * 0.302
-        g = -X * 0.509 + Y * 1.412 + Z * 0.066
-        b = X * 0.026 - Y * 0.072 + Z * 0.962
-
-        r = max(0.0, r)
-        g = max(0.0, g)
-        b = max(0.0, b)
-        max_val = max(r, g, b)
-        if max_val > 1.0:
-            r /= max_val
-            g /= max_val
-            b /= max_val
-
-        return int(r * 255), int(g * 255), int(b * 255)
 
     def _send_entertainment(self, r: int, g: int, b: int) -> None:
         parts = self.bridge_ip.split(":")
@@ -327,29 +329,6 @@ class Hue2DMXBridgeDevice:
         self.bridge.register_light(light_id, self._on_update)
         self.bridge.lights[light_id] = self.state
 
-    @staticmethod
-    def _xy_to_rgb(x: float, y: float, brightness: int) -> tuple[int, int, int]:
-        if brightness <= 0 or y == 0:
-            return 0, 0, 0
-        z = 1.0 - x - y
-        Y = brightness / 100.0
-        X = (Y / y) * x
-        Z = (Y / y) * z
-
-        r = X * 1.612 - Y * 0.203 - Z * 0.302
-        g = -X * 0.509 + Y * 1.412 + Z * 0.066
-        b = X * 0.026 - Y * 0.072 + Z * 0.962
-
-        r = max(0.0, r)
-        g = max(0.0, g)
-        b = max(0.0, b)
-        max_val = max(r, g, b)
-        if max_val > 1.0:
-            r /= max_val
-            g /= max_val
-            b /= max_val
-
-        return int(r * 255), int(g * 255), int(b * 255)
 
     def _on_update(self, state: Dict) -> None:
         if "stream_rgb" in state:
@@ -366,7 +345,7 @@ class Hue2DMXBridgeDevice:
             y = xy.get("y", 0.0)
 
             if on:
-                r, g, b = self._xy_to_rgb(x, y, bri)
+                r, g, b = xy_to_rgb(x, y, bri)
             else:
                 r, g, b = 0, 0, 0
 
