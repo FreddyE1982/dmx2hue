@@ -4,7 +4,7 @@ This repository contains simple Python implementations of virtual lighting devic
 
 ## Components
 
-- `VirtualDMXDevice` provides a minimal representation of a DMX512 device with a configurable start address.
+- `VirtualDMXDevice` provides a minimal representation of a DMX512 device with a configurable start address. It now includes convenience methods for setting and reading multiple channels.
 - `VirtualHueDevice` wraps the Hue API v2 for controlling lights and can send
   updates via a simplified Hue Entertainment streaming implementation.
 - `VirtualHueBridge` offers a lightweight Flask server that emulates some Hue Bridge v2 endpoints.
@@ -33,6 +33,8 @@ from virtual_devices import (
 # DMX device
 dmx = VirtualDMXDevice(address=1)
 dmx.set_channel(1, 255)
+dmx.set_channels({2: 128, 3: 64})
+print(dmx.get_channel(2))
 dmx.dump_frame()
 
 # Hue bridge

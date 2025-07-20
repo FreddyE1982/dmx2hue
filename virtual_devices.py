@@ -88,6 +88,17 @@ class VirtualDMXDevice:
             raise ValueError("value must be 0-255")
         self.channels[channel - 1] = value
 
+    def set_channels(self, values: Dict[int, int]) -> None:
+        """Set multiple channel values at once."""
+        for ch, val in values.items():
+            self.set_channel(ch, val)
+
+    def get_channel(self, channel: int) -> int:
+        """Return a DMX channel value."""
+        if not 1 <= channel <= self.CHANNELS:
+            raise ValueError("channel must be in range 1-512")
+        return self.channels[channel - 1]
+
     def set_relative_channel(self, offset: int, value: int) -> None:
         """Set a channel relative to this device's start address."""
         self.set_channel(self.address + offset, value)

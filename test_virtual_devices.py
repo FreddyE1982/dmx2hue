@@ -37,6 +37,15 @@ def test_dmx_device_channel_setting():
         dmx.set_channel(1, 256)
 
 
+def test_dmx_device_multi_channels():
+    dmx = VirtualDMXDevice()
+    dmx.set_channels({1: 10, 2: 20})
+    assert dmx.get_channel(1) == 10
+    assert dmx.get_channel(2) == 20
+    with pytest.raises(ValueError):
+        dmx.get_channel(513)
+
+
 def test_dmx_device_address():
     dmx = VirtualDMXDevice(address=10)
     assert dmx.address == 10
