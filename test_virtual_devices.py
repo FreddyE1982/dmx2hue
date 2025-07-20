@@ -197,3 +197,22 @@ def test_huestream_rate_limiting(monkeypatch):
     time.sleep(0.2)
     assert updates <= 6
 
+
+def test_hue_device_context_manager():
+    port = get_free_port()
+    bridge = VirtualHueBridge(port=port)
+    bridge.register_light("7")
+    bridge.start()
+    time.sleep(0.5)
+
+    with VirtualHueDevice(
+        bridge_ip=f"127.0.0.1:{port}",
+        auth_token="token",
+        device_id="7",
+        scheme="https",
+    ) as device:
+        resp = device.set_state(on=True, brightness=10)
+        assert resp.status_code == 200
+
+    assert device._sock.fileno() == -1
+

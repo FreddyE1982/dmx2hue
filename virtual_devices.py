@@ -155,6 +155,16 @@ class VirtualHueDevice:
         self._sock.sendto(msg, (host, udp_port))
         self._seq = (self._seq + 1) % 256
 
+    def close(self) -> None:
+        """Close the underlying UDP socket."""
+        self._sock.close()
+
+    def __enter__(self) -> "VirtualHueDevice":
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        self.close()
+
 
 class VirtualHueBridge:
     """Minimal virtual Hue Bridge implementing Hue API v2 endpoints."""
